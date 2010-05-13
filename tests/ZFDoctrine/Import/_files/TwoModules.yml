@@ -1,0 +1,37 @@
+Model_User:
+  columns:
+    username:
+      type: string(255)
+    password:
+      type: string(255)
+    contact_id:
+      type: integer
+  relations:
+    Contact:
+      class: Addressbook_Model_Contact
+      local: contact_id
+      foreign: id
+      foreignAlias: User
+      foreignType: one
+      type: one
+
+Addressbook_Model_Contact:
+  columns:
+    first_name:
+      type: string(255)
+    last_name:
+      type: string(255)
+    phone:
+      type: string(255)
+    email:
+      type: string(255)
+    address:
+      type: string(255)
+  relations:
+    User:
+      class: Model_User
+      local: id
+      foreign: contact_id
+      foreignAlias: Contact
+      foreignType: one
+      type: one

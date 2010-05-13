@@ -1,0 +1,4 @@
+Blog_Model_Foo:
+  columns:
+    foo:
+      type: string(255)
