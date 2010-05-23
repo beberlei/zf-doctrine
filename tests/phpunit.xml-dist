@@ -4,5 +4,6 @@
         <const name="ZEND_LIBRARY" value="" />
         <const name="ZEND_DOCTRINE_DC12_DIRECTORY" value="" />
         <const name="ZEND_DOCTRINE_DC12_SFYAML" value="" />
+        <var name="DOCTRINE_DSN" value="" />
     </php>
 </phpunit>

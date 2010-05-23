@@ -1,34 +1,20 @@
 <?php
 /**
- * Zend Framework
+ * ZFDoctrine
  *
  * LICENSE
  *
  * This source file is subject to the new BSD license that is bundled
  * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://framework.zend.com/license/new-bsd
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@zend.com so we can send you a copy immediately.
- *
- * @category   Zend
- * @package    Doctrine
- * @subpackage Core
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * to kontakt@beberlei.de so I can send you a copy immediately.
  */
 
 /**
  * Core Zend Doctrine integrations
  *
- * @uses       Doctrine_Core
- * @category   Zend
- * @package    Doctrine
- * @subpackage Core
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @author Benjamin Eberlei <kontakt@beberlei.de>
  */
 class ZFDoctrine_Core extends Doctrine_Core
 {
@@ -38,9 +24,44 @@ class ZFDoctrine_Core extends Doctrine_Core
     const MODEL_LOADING_ZEND = 4;
 
     /**
+     * @var int
+     */
+    const MODEL_LOADING_ZEND_SINGLE_LIBRARY = 5;
+
+    /**
+     * @var int
+     */
+    const MODEL_LOADING_ZEND_MODULE_LIBRARY = 6;
+
+    /**
      * @var array
      */
     static private $_modelDirs = null;
+
+    /**
+     * @var string
+     */
+    static private $_singleLibraryPath = null;
+
+    static public function resetModelDirectories()
+    {
+        self::$_modelDirs = null;
+    }
+
+    /**
+     * @param string $path
+     */
+    static public function setSingleLibraryPath($path)
+    {
+        if (!file_exists($path) || !is_dir($path)) {
+            throw ZFDoctrine_DoctrineException::invalidLibraryPath($path);
+        }
+
+        $manager = Doctrine_Manager::getInstance();
+        $manager->setAttribute(Doctrine_Core::ATTR_MODEL_LOADING, self::MODEL_LOADING_ZEND_SINGLE_LIBRARY);
+        self::$_singleLibraryPath = $path;
+        self::resetModelDirectories();
+    }
 
     /**
      * @param array|string $directories
@@ -52,7 +73,8 @@ class ZFDoctrine_Core extends Doctrine_Core
 
         $modelLoading = ($modelLoading != null) ? $manager->getAttribute(Doctrine_Core::ATTR_MODEL_LOADING) : $modelLoading;
 
-        if ($modelLoading == self::MODEL_LOADING_ZEND) {
+        $zendStyles = array(self::MODEL_LOADING_ZEND, self::MODEL_LOADING_ZEND_SINGLE_LIBRARY, self::MODEL_LOADING_ZEND_MODULE_LIBRARY);
+        if (in_array($modelLoading, $zendStyles)) {
             return self::loadAllZendModels();
         } else {
             return parent::loadModels($directories, $modelLoading, $classPrefix);
@@ -66,15 +88,45 @@ class ZFDoctrine_Core extends Doctrine_Core
      */
     static public function getAllModelDirectories()
     {
+        $manager = Doctrine_Manager::getInstance();
+        $modelLoading = $manager->getAttribute(Doctrine_Core::ATTR_MODEL_LOADING);
+
         if (self::$_modelDirs == null) {
+            $manager = Doctrine_Manager::getInstance();
+
             $front = Zend_Controller_Front::getInstance();
             $modules = $front->getControllerDirectory();
-            $controllerDirName = $front->getModuleControllerDirectoryName();
-
             $modelDirectories = array();
-            foreach ((array)$modules AS $module => $controllerDir) {
-                $modelDir = str_replace( $controllerDirName, '',  $controllerDir) . DIRECTORY_SEPARATOR . '/models';
-                $modelDirectories[$module] = $modelDir;
+
+            // For all model styles make sure that they end with a / in the directory name!!
+            if ($modelLoading == self::MODEL_LOADING_ZEND) {
+                $controllerDirName = $front->getModuleControllerDirectoryName();
+                foreach ((array)$modules AS $module => $controllerDir) {
+                    $modelDir = str_replace( $controllerDirName, '',  $controllerDir) .
+                                DIRECTORY_SEPARATOR . 'models' . DIRECTORY_SEPARATOR;
+                    $modelDirectories[$module] = $modelDir;
+                }
+            } else if ($modelLoading == self::MODEL_LOADING_ZEND_MODULE_LIBRARY) {
+                $controllerDirName = $front->getModuleControllerDirectoryName();
+                foreach ((array)$modules AS $module => $controllerDir) {
+                    $modelDir = str_replace( $controllerDirName, '',  $controllerDir) .
+                                DIRECTORY_SEPARATOR . 'library' .
+                                DIRECTORY_SEPARATOR . self::_formatModuleName($module) .
+                                DIRECTORY_SEPARATOR . 'Model' . DIRECTORY_SEPARATOR;
+                    $modelDirectories[$module] = $modelDir;
+                }
+            } else if ($modelLoading == self::MODEL_LOADING_ZEND_SINGLE_LIBRARY) {
+                if (!self::$_singleLibraryPath) {
+                    throw ZFDoctrine_DoctrineException::libraryPathMissing();
+                }
+
+                foreach ((array)$modules AS $module => $controllerDir) {
+                    $modelDirectories[$module] = self::$_singleLibraryPath . DIRECTORY_SEPARATOR .
+                                                 self::_formatModuleName($module) . DIRECTORY_SEPARATOR .
+                                                'Model' . DIRECTORY_SEPARATOR;
+                }
+            } else {
+                throw ZFDoctrine_DoctrineException::invalidZendStyle();
             }
             self::$_modelDirs = $modelDirectories;
         }
@@ -89,11 +141,17 @@ class ZFDoctrine_Core extends Doctrine_Core
     static public function loadAllZendModels()
     {
         $front = Zend_Controller_Front::getInstance();
-        $defaultModule = $front->getDefaultModule();
+
+        $manager = Doctrine_Manager::getInstance();
+        $modelLoading = $manager->getAttribute(Doctrine_Core::ATTR_MODEL_LOADING);
 
         $loadedModels = array();
         foreach (self::getAllModelDirectories() AS $module => $modelDir) {
             $moduleName = self::_formatModuleName($module);
+
+            if (!file_exists($modelDir)) {
+                continue;
+            }
 
             $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($modelDir),
                         RecursiveIteratorIterator::LEAVES_ONLY);
@@ -102,14 +160,10 @@ class ZFDoctrine_Core extends Doctrine_Core
                     continue;
                 }
 
-                $className = str_replace($modelDir . DIRECTORY_SEPARATOR, "", $file->getPathName());
+                $className = str_replace($modelDir, "", $file->getPathName());
                 $className = str_replace(DIRECTORY_SEPARATOR, '_', $className);
                 $className = substr($className, 0, strpos($className, '.'));
-                if ($module !== $defaultModule) {
-                    $className = $moduleName."_Model_".$className;
-                } else {
-                    $className = "Model_".$className;
-                }
+                $className = $moduleName."_Model_".$className;
 
                 if (strpos($className, '_Base_') === false && substr($className, -5) !== 'Table') {
                     self::loadModel($className, $file->getPathName());

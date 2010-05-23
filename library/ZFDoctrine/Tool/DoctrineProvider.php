@@ -1,35 +1,22 @@
 <?php
 /**
- * Zend Framework
+ * ZFDoctrine
  *
  * LICENSE
  *
  * This source file is subject to the new BSD license that is bundled
  * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://framework.zend.com/license/new-bsd
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@zend.com so we can send you a copy immediately.
- *
- * @category   Zend
- * @package    Zend_Doctrine
- * @subpackage Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * to kontakt@beberlei.de so I can send you a copy immediately.
  */
+
+require_once dirname(__FILE__) . "/../DoctrineException.php";
 
 /**
  * Doctrine Tool Provider
  *
- * @uses       Zend_Tool_Project_Provider_Abstract
- * @uses       Zend_Tool_Framework_Provider_Pretendable
- * @category   Zend
- * @package    Zend_Doctrine
- * @subpackage Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @author Benjamin Eberlei (kontakt@beberlei.de)
  */
 class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstract
     implements Zend_Tool_Framework_Provider_Pretendable
@@ -58,7 +45,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
      * @param  bool $withResourceDirectories
      * @return void
      */
-    public function createProject($dsn)
+    public function createProject($dsn, $zendProjectStyle = false, $libraryPerModule = false, $singleLibrary = false)
     {
         $profile = $this->_loadProfileRequired();
 
@@ -75,12 +62,25 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
             return;
         }
 
+        $projectStyle = "model_loading_zend";
+        if ($singleLibrary) {
+            $projectStyle = "model_loading_zend_single_library";
+        } else if ($libraryPerModule) {
+            $projectStyle = "model_loading_zend_module_library";
+        } else if ($zendProjectStyle) {
+            $projectStyle = "model_loading_zend";
+        }
+
         /* @var $applicationConfigResource Zend_Tool_Project_Context_Zf_ApplicationConfigFile */
         $applicationConfigResource->addStringItem('resources.doctrine.connections.default.dsn', $dsn, 'production', '"'.$dsn.'"');
         $applicationConfigResource->create();
-        $applicationConfigResource->addStringItem('pluginpaths.ZFDoctrine_Application_Resource', 'Zend/Doctrine/Application/Resource', 'production');
+        $applicationConfigResource->addStringItem('resources.doctrine.manager.attributes.attr_model_loading', $projectStyle, 'production', '"' . $projectStyle . "'");
+        $applicationConfigResource->create();
+        $applicationConfigResource->addStringItem('pluginpaths.ZFDoctrine_Application_Resource', 'ZFDoctrine/Application/Resource', 'production');
         $applicationConfigResource->create();
         $applicationConfigResource->addStringItem('autoloadernamespaces[]', "Doctrine", 'production');
+        $applicationConfigResource->create();
+        $applicationConfigResource->addStringItem('autoloadernamespaces[]', "ZFDoctrine", 'production');
         $applicationConfigResource->create();
 
         if ($this->_registry->getRequest()->isPretend()) {
@@ -119,25 +119,19 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         }
     }
 
-    public function buildAll($force = false)
+    public function buildProject($force = false, $load=false, $reload=false)
     {
-        $this->createDb();
+        if ($reload) {
+            $this->dropDatabase($force);
+        }
+        $this->createDatabase();
         $this->createTables();
+        if ($load) {
+            $this->loadData(false);
+        }
     }
 
-    public function buildAllLoad($force = false)
-    {
-        $this->buildAll($force);
-        $this->loadData(false);
-    }
-
-    public function buildAllReload($force = false)
-    {
-        $this->dropDb($force);
-        $this->buildAllLoad();
-    }
-
-    public function createDb()
+    public function createDatabase()
     {
         $doctrine = $this->_getDoctrineRegistry();
         
@@ -157,7 +151,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         }
     }
 
-    public function dropDb($force = false)
+    public function dropDatabase($force = false)
     {
         if ($force == false) {
             $confirmed = $this->_registry
@@ -196,6 +190,10 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
             $this->_print("Successfully created tables from model.", array('color' => 'green'));
         } catch(Exception $e) {
             $this->_print("Error while creating tables from model: ".$e->getMessage(), array('color' => array('white', 'bgRed')));
+
+            if ($this->_registry->getRequest()->isDebug()) {
+                $this->_print($e->getTraceAsString());
+            }
         }
     }
 
@@ -239,10 +237,10 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         $this->_print('Destination Directory: ' . $fixtureDir);
     }
 
-    public function generateModelsYaml()
+    public function generateModelsFromYaml()
     {
         $doctrine = $this->_getDoctrineRegistry();
-        $modelsPath = $this->_loadDoctrineModels();
+        $this->_loadDoctrineModels();
 
         $import = $this->_createImportSchema();
         $import->setOptions($doctrine->getGenerateModelOptions());
@@ -255,7 +253,8 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         $modelLoading = $manager->getAttribute(Doctrine_Core::ATTR_MODEL_LOADING);
 
         $listener = false;
-        if ($modelLoading !== ZFDoctrine_Core::MODEL_LOADING_ZEND) {
+        $zendStyles = array(ZFDoctrine_Core::MODEL_LOADING_ZEND, ZFDoctrine_Core::MODEL_LOADING_ZEND_SINGLE_LIBRARY, ZFDoctrine_Core::MODEL_LOADING_ZEND_MODULE_LIBRARY);
+        if (!in_array($modelLoading, $zendStyles)) {
             $import = new Doctrine_Import_Schema();
         } else {
             $response = $this->_registry->getResponse();
@@ -266,7 +265,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         return $import;
     }
 
-    public function generateYamlModels()
+    public function generateYamlFromModels()
     {
         $this->_loadDoctrineModels();
 
@@ -277,7 +276,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         $this->_print('Destination Directory: ' . $yamlDir);
     }
 
-    public function generateYamlDb()
+    public function generateYamlFromDatabase()
     {
         $this->_initDoctrineResource();
 
@@ -288,38 +287,100 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         $this->_print('Destination Directory: ' . $yamlDir);
     }
 
-    public function generateMigration($className)
+    public function generateMigration($className=null, $fromDatabase=false, $fromModels=false)
+    {
+        $migrationsPath = $this->_getMigrationsDirectoryPath();
+
+        if ($className) {
+            Doctrine_Core::generateMigrationClass($className, $migratePath);
+
+            $this->_print('Successfully generated migration class '.$className.'.', array('color' => 'green'));
+            $this->_print('Destination Directory: '.$migratePath);
+        } else if ($fromDatabase) {
+            $this->_initDoctrineResource();
+
+            $yamlSchemaPath = $this->_getYamlDirectoryPath();
+            $migration = new Doctrine_Migration($migrationsPath);
+            $result1 = false;
+            if ( ! count($migration->getMigrationClasses())) {
+                $result1 = Doctrine_Core::generateMigrationsFromDb($migrationsPath);
+            }
+            $connections = array();
+            foreach (Doctrine_Manager::getInstance() as $connection) {
+                $connections[] = $connection->getName();
+            }
+            $changes = Doctrine_Core::generateMigrationsFromDiff($migrationsPath, $connections, $yamlSchemaPath);
+            $numChanges = count($changes, true) - count($changes);
+            $result = ($result1 || $numChanges) ? true:false;
+
+            if ($result) {
+                $this->_print('Generated migration classes from the database successfully.');
+            } else {
+                throw new Exception('Could not generate migration classes from database');
+            }
+        } else if ($fromModels) {
+            $this->_loadDoctrineModels();
+
+            Doctrine_Core::generateMigrationsFromModels($migrationsPath, null);
+
+            $this->_print('Generated migration classes from the model successfully.');
+        }
+    }
+
+    public function excecuteMigration($toVersion = null)
+    {
+        $this->_initDoctrineResource();
+
+        $currentVersion = $this->getCurrentMigrationVersion();
+
+        $migratePath = $this->_getMigrationsDirectoryPath();
+        $newVersion = Doctrine_Core::migrate($migratePath, $toVersion);
+
+        $this->_print('Migrated from version ' . $currentVersion . ' to ' . $newVersion);
+    }
+
+    public function showMigration()
+    {
+        $this->_initDoctrineResource();
+
+        $this->_print('The current migration version is: ' . $this->getCurrentMigrationVersion());
+    }
+
+    public function show()
     {
         $this->_loadDoctrineModels();
 
+        $modules = ZFDoctrine_Core::getAllModelDirectories();
+        
+        $this->_print('Current Doctrine Model Directories:');
+        foreach ($modules AS $module => $directory) {
+            $this->_print(' * Module ' . $module . ': ' . $directory);
+        }
+        $this->_registry->getResponse()->appendContent('');
+        
+        $models = ZFDoctrine_Core::getLoadedModels();
+        $this->_print('All current models:');
+        foreach ($models AS $class) {
+            $this->_print(' * ' . $class);
+        }
+
+        $this->_registry->getResponse()->appendContent('');
+
+        $this->showMigration();
+    }
+
+    protected function getCurrentMigrationVersion()
+    {
         $migratePath = $this->_getMigrationsDirectoryPath();
-
-        Doctrine_Core::generateMigrationClass($className, $migratePath);
-
-        $this->_print('Successfully generated migration class '.$className.'.', array('color' => 'green'));
-        $this->_print('Destination Directory: '.$migratePath);
-    }
-
-    public function generateMigrationsDb()
-    {
-        
-    }
-
-    public function generateMigrationsDiff()
-    {
-
-    }
-
-    public function generateMigrationsModels()
-    {
-        
+        $migration = new Doctrine_Migration($migratePath);
+        return $migration->getCurrentVersion();
     }
 
     protected function _loadDoctrineModels()
     {
         $this->_initDoctrineResource();
-
         $manager = Doctrine_Manager::getInstance();
+
         ZFDoctrine_Core::loadModels(
             $this->_getDoctrineRegistry()->getModelPath(),
             $manager->getAttribute(Doctrine_Core::ATTR_MODEL_LOADING)
@@ -373,7 +434,13 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         /* @var $app Zend_Application */
         $app = $profile->search('BootstrapFile')->getApplicationInstance();
         $app->bootstrap();
-        $this->_doctrineRegistry = $app->getBootstrap()->getContainer()->doctrine;
+
+        $container = $app->getBootstrap()->getContainer();
+        if (!isset($container->doctrine)) {
+            throw new ZFDoctrine_DoctrineException('There is no "doctrine" resource enabled in the current project.');
+        }
+
+        $this->_doctrineRegistry = $container->doctrine;
     }
 
     /**

@@ -1,25 +1,21 @@
 <?php
 /**
- * Zend Framework
+ * ZFDoctrine
  *
  * LICENSE
  *
  * This source file is subject to the new BSD license that is bundled
  * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://framework.zend.com/license/new-bsd
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@zend.com so we can send you a copy immediately.
- *
- * @category   Zend
- * @package    Doctrine
- * @subpackage Import
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * to kontakt@beberlei.de so I can send you a copy immediately.
  */
 
+/**
+ * Extends the Doctrine Import Schema for special Zend Treatment
+ *
+ * @author Benjamin Eberlei (kontakt@beberlei.de)
+ */
 class ZFDoctrine_Import_Schema extends Doctrine_Import_Schema
 {
     /**
@@ -31,11 +27,6 @@ class ZFDoctrine_Import_Schema extends Doctrine_Import_Schema
      * @var array
      */
     protected $_modules = array();
-
-    /**
-     * @var string
-     */
-    protected $_defaultModule = null;
 
     /**
      * @var array
@@ -59,7 +50,8 @@ class ZFDoctrine_Import_Schema extends Doctrine_Import_Schema
         $manager = Doctrine_Manager::getInstance();
         $modelLoading = $manager->getAttribute(Doctrine_Core::ATTR_MODEL_LOADING);
 
-        if ($modelLoading !== ZFDoctrine_Core::MODEL_LOADING_ZEND) {
+        $zendStyles = array(ZFDoctrine_Core::MODEL_LOADING_ZEND, ZFDoctrine_Core::MODEL_LOADING_ZEND_SINGLE_LIBRARY, ZFDoctrine_Core::MODEL_LOADING_ZEND_MODULE_LIBRARY);
+        if (!in_array($modelLoading, $zendStyles)) {
             throw new ZFDoctrine_DoctrineException(
                 "Can't use ZFDoctrine_Schema with Doctrine_Core::ATTR_MODEL_LOADING not equal to 4 (Zend)."
             );
@@ -133,7 +125,6 @@ class ZFDoctrine_Import_Schema extends Doctrine_Import_Schema
     protected function _initModules()
     {
         $this->_modules = ZFDoctrine_Core::getAllModelDirectories();
-        $this->_defaultModule = Zend_Controller_Front::getInstance()->getDefaultModule();
     }
 
     /**
@@ -148,25 +139,15 @@ class ZFDoctrine_Import_Schema extends Doctrine_Import_Schema
         }
 
         $classPrefix = substr($className, 0, strpos($className, 'Model_')+strlen('Model_'));
-        if (strpos($className, "Model_") === 0) {
-            $moduleName = $this->_defaultModule;
-        } else {
-            $camelCaseToDash = new Zend_Filter_Word_CamelCaseToDash();
-
-            $moduleName = current(explode("_", $className));
-            $moduleName = strtolower($camelCaseToDash->filter($moduleName));
-        }
+        $camelCaseToDash = new Zend_Filter_Word_CamelCaseToDash();
+        $moduleName = current(explode("_", $className));
+        $moduleName = strtolower($camelCaseToDash->filter($moduleName));
 
         if (!isset($this->_modules[$moduleName])) {
             throw ZFDoctrine_DoctrineException::unknownModule($moduleName, $className);
         }
 
-        $definition['modulePrefix'] = $classPrefix;
-
-        $moduleModelsDirectory = $this->_modules[$moduleName];
-
-        $builder->setTargetPath($moduleModelsDirectory);
-
+        $builder->setTargetPath($this->_modules[$moduleName]);
         $builder->buildRecord($definition);
 
         if ($this->_listener) {

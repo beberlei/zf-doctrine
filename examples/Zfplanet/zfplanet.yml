@@ -1,0 +1,160 @@
+Zfplanet_Model_Blog:
+    columns:
+        id:
+            type: integer
+            primary: true
+            autoincrement: true
+        feedId:
+            type: string(255)
+        contactName:
+            type: string(100)
+        contactEmail:
+            type: string(100)
+        uri:
+            type: string(255)
+    actAs:
+        Timestampable:
+            created:
+                name: dateCreated
+            updated:
+                name: dateModified
+Zfplanet_Model_Feed:
+    columns:
+        id:
+            type: string(255)
+            primary: true
+        blogId:
+            type: integer
+        title:
+            type: string(255)
+        uri:
+            type: string(255)
+        type:
+            type: string(8)
+        isActive:
+            type: integer(1)
+        lastSynchronised:
+            type: timestamp
+    actAs:
+        Timestampable:
+            created:
+                name: dateCreated
+            updated:
+                name: dateModified
+    relations:
+        Blog:
+            local: blogId
+            foreign: id
+            alias: Blog
+            class: Zfplanet_Model_Blog
+            foreignAlias: Feeds
+            onDelete: CASCADE
+
+Zfplanet_Model_FeedMeta:
+    columns:
+        id:
+            type: integer
+            primary: true
+            autoincrement: true
+        feedId:
+            type: string(255)
+        title:
+            type: string(255)
+        description:
+            type: string(255)
+        link:
+            type: string(255)
+        feedLink:
+            type: string(255)
+    actAs:
+        Timestampable:
+            created:
+                name: dateCreated
+            updated:
+                name: dateModified
+    relations:
+        Feed:
+            local: feedId
+            foreign: id
+            alias: Feed
+            class: Zfplanet_Model_Feed
+            foreignAlias: FeedMeta
+            foreignType: one
+            onDelete: CASCADE
+
+Zfplanet_Model_Entry:
+    columns:
+        id:
+            type: string(255)
+            primary: true
+        feedId:
+            type: string(255)
+        title:
+            type: string(255)
+        uri:
+            type: string(255)
+        content:
+            type: clob
+        description:
+            type: string(1000)
+        publishedDate:
+            type: timestamp
+        updatedDate:
+            type: timestamp
+        author:
+            type: string(100)
+        signatureHash:
+            type: string(32)
+        isActive:
+            type: integer(1)
+    actAs:
+        Timestampable:
+            created:
+                name: dateCreated
+            updated:
+                name: dateModified
+    relations:
+        Feed:
+            local: feedId
+            foreign: id
+            alias: Feed
+            class: Zfplanet_Model_Feed
+            foreignAlias: Entries
+            onDelete: CASCADE
+
+Zfplanet_Model_Subscription:
+    columns:
+        id:
+            type: string(32)
+            primary: true
+        topic_url:
+            type: string(255)
+        hub_url:
+            type: string(255)
+        created_time:
+            type: timestamp
+        lease_seconds:
+            type: integer(6)
+        verify_token:
+            type: string(255)
+        secret:
+            type: string(255)
+        expiration_time:
+            type: timestamp
+        subscription_state:
+            type: string(12)
+
+Zfplanet_Model_User:
+    columns:
+        id:
+            type: integer
+            primary: true
+            autoincrement: true
+        name:
+            type: string(25)
+        password:
+            type: string(64)
+        email:
+            type: string(100)
+        lastLoginDate:
+            type: timestamp

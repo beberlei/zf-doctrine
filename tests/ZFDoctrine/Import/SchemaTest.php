@@ -39,7 +39,7 @@ class ZFDoctrine_Import_SchemaTest extends PHPUnit_Framework_TestCase
         $listener = $this->getMock('ZFDoctrine_Import_ImportListener');
         $listener->expects($this->at(0))
                 ->method('notifyRecordBuilt')
-                ->with($this->equalTo('Model_User'), $this->equalTo('default'));
+                ->with($this->equalTo('Default_Model_User'), $this->equalTo('default'));
         $listener->expects($this->at(1))
                 ->method('notifyRecordBuilt')
                 ->with($this->equalTo('Addressbook_Model_Contact'), $this->equalTo('addressbook'));
