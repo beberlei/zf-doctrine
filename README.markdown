@@ -20,9 +20,11 @@ This integration requires the latest Doctrine version 1.2.2 to work completly
 Github offers SVN Read support for a while now, you can either use svn export or svn:externals
 to include ZFDoctrine into your project or into your PHP Include Path.
 
-    svn export https
+    svn checkout http://svn.github.com/beberlei/zf-doctrine.git
 
 #### Git Clone
+
+    git clone git://github.com/beberlei/zf-doctrine.git
 
 ### Zend_Tool Configuration
 
@@ -71,7 +73,11 @@ a "BootstrapFile" resource. For a new project you can easily achieve this by cal
     Creating project at /tmp/my-project
     Note: This command created a web project, for more information setting up your VHOST, please see docs/README
 
-For an existing project this is a bit more complicated and really not recommended.
+You should now import the ZFDoctrine and Doctrine 1.2 libraries into your
+application-root/library folder to make them available in your projects include
+path.
+
+To convert an existing project to use ZFDoctrine is a bit more complicated and really not recommended.
 If the project does not have a .zfproject.xml you have to create one. If you follow the Zend Standards
 you can get away with the following file contents:
 
@@ -94,14 +100,19 @@ Otherwise you have to twiggle on each of the nodes using the "filesystemName" at
 
 You have to follow one convention for ZFDoctrine to allow modular Doctrine models to work:
 
-*Models have to be called <ModuleName>_Model_<Name> for a non-default-module and Model_<Name> for the default module.*
+*Models have to be called <ModuleName>_Model_<Name> for all modules *including*
+the module that is considered to be the "default" for the MVC.
 
 Examples:
 
-* Model_User
-* Model_Group
+* Default_Model_User
+* Default_Model_Group
 * Blog_Model_Post
 * Blog_Model_Category
+
+To have Doctrine work with this classes you must explicitly spill out
+all the `refClass`, `model`, `local` and `foreign` properties on the
+Relations of your Doctrine models.
 
 ## Doctrine-Enable a Zend Framework Project
 
@@ -131,7 +142,7 @@ all the classes and manually delete the orphaned classes in this case.
 
 You find this option in the application.ini under the section:
 
-    resources.doctrine.projectstyle = "zend"
+    resources.doctrine.manager.attributes.attr_model_loading = "model_loading_zend"
 
 > **Note**
 >
@@ -343,7 +354,7 @@ If you want to generate the Table classes also you have to modify the applicatio
 
     resources.doctrine.generateModels.generateTableClasses = true
 
-## Generating Models (Modular MVC)
+## Generating Models in a Modular MVC
 
 As a modular example we combine the ["Real World Example" code](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/real-world-examples/en)
 from the Doctrine manual into two modules. We will implement a user-management and a forum in two modules. Our default
