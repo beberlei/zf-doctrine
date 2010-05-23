@@ -70,12 +70,8 @@ class ZFDoctrine_Form_Model_Adapter_Doctrine implements ZFDoctrine_Form_Model_Ad
             $isPrimary = (isset($def['primary'])) ? $def['primary'] : false;
             $isForeignKey = isset($foreignKeyColumns[strtolower($name)]);
 
-            if ($isForeignKey && !$isPrimary) {
-                $fieldName = $name;
-            } else {
-                $columnName = $this->_table->getColumnName($name);
-                $fieldName = $this->_table->getFieldName($columnName);
-            }
+            $columnName = $this->_table->getColumnName($name);
+            $fieldName = $this->_table->getFieldName($columnName);
 
             $cols[$fieldName] = array(
                 'type'          => $def['type'],
