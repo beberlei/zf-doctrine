@@ -3,7 +3,7 @@ class ZFDoctrine_Form_Model_Adapter_DoctrineTest extends PHPUnit_Framework_TestC
 {
     public function setUp() {
         parent::setUp();
-        if (isset($GLOBALS['DOCTRINE_DSN'])) {
+        if (isset($GLOBALS['DOCTRINE_DSN']) && strlen($GLOBALS['DOCTRINE_DSN'])) {
             Doctrine_Manager::connection($GLOBALS['DOCTRINE_DSN']);
         } else {
             Doctrine_Manager::connection('sqlite::memory:');

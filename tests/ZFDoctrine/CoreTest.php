@@ -22,7 +22,6 @@ class ZFDoctrine_CoreTest extends PHPUnit_Framework_TestCase
         $models = ZFDoctrine_Core::loadAllZendModels();
 
         $this->assertEquals(2, count($models));
-        var_dump($models);
         $this->assertContains('Default_Model_User', $models);
         $this->assertContains('Blog_Model_Post', $models);
     }
