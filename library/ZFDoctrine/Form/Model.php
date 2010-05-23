@@ -146,6 +146,10 @@ class ZFDoctrine_Form_Model extends Zend_Form
             $this->setFieldLabels($options['fieldLabels']);
         }
 
+        if (isset($options['fieldTypes'])) {
+            $this->setFieldTypes($options['fieldTypes']);
+        }
+
         if (isset($options['generateManyFields'])) {
             $this->setGenerateManyFields($options['generateManyFields']);
         }
@@ -160,6 +164,10 @@ class ZFDoctrine_Form_Model extends Zend_Form
 
     public function setFieldLabels(array $labels) {
         $this->_fieldLabels = $labels;
+    }
+
+    public function setFieldTypes(array $types) {
+        $this->_fieldTypes = $types;
     }
 
     public function setColumnTypes(array $types) {
