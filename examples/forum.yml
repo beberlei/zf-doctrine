@@ -1,0 +1,48 @@
+---
+Forum_Model_Category:
+  columns:
+    name: string(50)
+    description: string(99999)
+
+Forum_Model_Board:
+  columns:
+    category_id: integer(10)
+    name: string(100)
+    description: string(5000)
+  relations:
+    Category:
+      class: Forum_Model_Category
+      local: category_id
+      foreign: id
+    Threads:
+      class: Forum_Model_Thread
+      local: id
+      foreign: board_id
+
+Forum_Model_Entry:
+  columns:
+    author: string(100)
+    message: string(99999)
+    thread_id: integer(10)
+    date: integer(10)
+  relations:
+    Thread:
+      class: Forum_Model_Thread
+      local: thread_id
+      foreign: id
+
+Forum_Model_Thread:
+  columns:
+    topic: string(100)
+    board_id: integer(10)
+    updated: integer(10)
+    closed: integer(1)
+  relations:
+    Board:
+      class: Forum_Model_Board
+      local: board_id
+      foreign: id
+    Entries:
+      class: Forum_Model_Entry
+      local: id
+      foreign: thread_id

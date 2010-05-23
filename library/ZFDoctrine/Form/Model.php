@@ -292,7 +292,9 @@ class ZFDoctrine_Form_Model extends Zend_Form
                 $field->setRequired(true);
             }
 
-            $field->setLabel($label);
+            if ($type != 'hidden') {
+                $field->setLabel($label);
+            }
 
             if($type == 'select' && $definition['type'] == 'enum') {
                 foreach($definition['values'] as $text) {
