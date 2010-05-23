@@ -1,7 +1,14 @@
 <?php
 class ZFDoctrine_Form_Model_Adapter_Doctrine implements ZFDoctrine_Form_Model_Adapter_Interface
 {
+    /**
+     * @var Doctrine_Table
+     */
     protected $_table = null;
+
+    /**
+     * @var Doctrine_Record
+     */
     protected $_record = null;
     protected $_model = '';
     protected $_cols = null;
@@ -60,19 +67,21 @@ class ZFDoctrine_Form_Model_Adapter_Doctrine implements ZFDoctrine_Form_Model_Ad
         $data = $this->_table->getColumns();
         $cols = array();
         foreach($data as $name => $def) {
+            $isPrimary = (isset($def['primary'])) ? $def['primary'] : false;
             $isForeignKey = isset($foreignKeyColumns[strtolower($name)]);
 
-            if ($isForeignKey) {
-                $fieldName = $this->_table->getFieldName($this->_table->getColumnName($name));
-            } else {
+            if ($isForeignKey && !$isPrimary) {
                 $fieldName = $name;
+            } else {
+                $columnName = $this->_table->getColumnName($name);
+                $fieldName = $this->_table->getFieldName($columnName);
             }
 
             $cols[$fieldName] = array(
                 'type'          => $def['type'],
                 'notnull'       => (isset($def['notnull'])) ? $def['notnull'] : false,
                 'values'        => (isset($def['values'])) ? $def['values'] : array(),
-                'primary'       => (isset($def['primary'])) ? $def['primary'] : false,
+                'primary'       => $isPrimary,
                 'foreignKey'    => $isForeignKey,
                 'class'         => ($isForeignKey) ? $foreignKeyColumns[strtolower($name)] : null,
             );
