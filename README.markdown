@@ -728,6 +728,12 @@ before rendering, validating or saving:
 After using setRecord, the default field values will be read from the record passed to the method. Also, when calling
 save(), any modifications will be saved to this record instead of a new one.
 
+### Handling Relations
+
+All to one relations and all to many relations are handled by select and multi-select html fields
+respectively. By default they render as their ID, however when you implement the `__toString()` method
+on your Doctrine records you can modify how they are displayed in the forms.
+
 ### Modifying the form behavior
 
 The class in its current implementation supports both creating new records and editing existing ones, and it can also display some relations as select boxes and subforms. You can also make it ignore chosen columns so it won’t autogenerate fields for them and such. Other options include giving labels for fields and switching their types.
