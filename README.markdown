@@ -26,12 +26,36 @@ to include ZFDoctrine into your project or into your PHP Include Path.
 
     git clone git://github.com/beberlei/zf-doctrine.git
 
+### Install ZF with Zend Tool
+
+To get ZF with Zend-Tool support running you can execute the following (on Linux):
+
+    root@benny-pc:~# pear channel-discover pear.zfcampus.org
+    Adding Channel "pear.zfcampus.org" succeeded
+    Discovery of channel "pear.zfcampus.org" succeeded
+
+    root@benny-pc:~# pear install zfcampus/zf
+    downloading ZF-1.10.4.tgz ...
+    Starting to download ZF-1.10.4.tgz (3,528,732 bytes)
+    ...................................done: 3,528,732 bytes
+    install ok: channel://pear.zfcampus.org/ZF-1.10.4
+
+    root@benny-pc:~# zf show version
+    Zend Framework Version: 1.10.4
+
 ### Zend_Tool Configuration
 
 To enable the ZFDoctrine Tool Providers you have to register them in your Zend Tool
 configuration. If you have ZFDoctrine in your include path this is as easy as calling:
 
-    zf enable config.provider ZFDoctrine_Tool_DoctrineProvider
+    benny@benny-pc:~$ zf enable config.provider ZFDoctrine_Tool_DoctrineProvider
+    Provider/Manifest 'ZFDoctrine_Tool_DoctrineProvider' was enabled for usage with Zend Tool.
+
+If you don't have a `.zf.ini` configuration file you can create one by calling:
+
+    benny@benny-pc:~$ zf create config
+    Successfully written Zend Tool config.
+    It is located at: /home/benny/.zf.ini
 
 If you don't have ZFDoctrine in your include path, you need to configure Zend Tools
 include path to do so. Go to your $HOME directory, open up `.zf.ini` and add a line:
@@ -44,10 +68,10 @@ Now check if the installation worked by calling:
 
 The result should be help information on all the available commands:
 
-    Zend Framework Command Line Console Tool v1.11.0dev
+    Zend Framework Command Line Console Tool v1.10.4
     Actions supported by provider "Doctrine"
       Doctrine
-        zf create-project doctrine dsn zend-project-style[=1] library-per-module single-library
+        zf create-project doctrine dsn zend-project-style library-per-module single-library
         zf build-project doctrine force load reload
         zf create-database doctrine
         zf drop-database doctrine force
@@ -62,7 +86,7 @@ The result should be help information on all the available commands:
         zf generate-migration doctrine class-name from-database from-models
         zf excecute-migration doctrine to-version
         zf show-migration doctrine
-
+        zf show doctrine
 
 ## Setting up a new Zend Framework Project
 
@@ -75,7 +99,8 @@ a "BootstrapFile" resource. For a new project you can easily achieve this by cal
 
 You should now import the ZFDoctrine and Doctrine 1.2 libraries into your
 application-root/library folder to make them available in your projects include
-path.
+path. Alternatively you can edit your `application/configs/application.ini`
+and change the include path to search for both projects.
 
 To convert an existing project to use ZFDoctrine is a bit more complicated and really not recommended.
 If the project does not have a .zfproject.xml you have to create one. If you follow the Zend Standards
@@ -121,10 +146,13 @@ To use tooling support, you have to Doctrine-Enable your Zend Framework Project 
     zf create-project doctrine --dsn=mysql://root:passwd@localhost/my_app --zend-project-style
 
 This enables the Doctrine Zend_Application resource with the given DSN to connecto to a database.
+It also enables some additional lines for autoloading "Doctrine" and "ZFDoctrine" namespaces
+by the `Zend_Loader_Autoloader`.
+
 Additionally a project style has to be specified that defines where code-generation puts your
 entities.
 
-Additionally there are 4 directories generated inside your application/configs directory:
+After execution there are 4 new directories generated inside your application/configs directory:
 
 * `application/configs/schema` - Contains the YAML Schema Metadata
 * `application/configs/migrations` - Contains the migration classes
@@ -566,6 +594,15 @@ here is a generic approach to this problem:
 
 For the other two project styles you have to make sure that the `Zend_Loader_Autoloader` or any
 other PSR-0 compatible loader points to the `library` directories correctly.
+
+## Generating the Database Tables
+
+Now that we have an existing model we can create the database from it calling:
+
+    zf build-project doctrine --reload
+
+This drops the database, re-creates it with tables and loads possible fixture
+data located in the `applications/config/fixtures`.
 
 ## Using Migrations
 
