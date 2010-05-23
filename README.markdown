@@ -668,7 +668,7 @@ you can essentially use the class just like any other Zend_Form instance; it jus
     {
         public function createAction()
         {
-            $form = new ZFDoctrine_From_Model(array(
+            $form = new ZFDoctrine_Form_Model(array(
                 'model' => 'Default_Model_User',
                 'action' => '.',
                 'method' => 'post'
