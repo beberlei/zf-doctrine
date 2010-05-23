@@ -215,8 +215,8 @@ class ZFDoctrine_Form_Model extends Zend_Form
             }
 
             if ($definition['foreignKey']) {
-                $related = $this->_adapter->getRelatedRecord($instance, $name);
-                $this->setDefault($name, $this->_adapter->getRecordIdentifier($related));
+                $relatedId = $this->_adapter->getRelatedRecordId($instance, $name);
+                $this->setDefault($name, $relatedId);
             } else {
                 $this->setDefault($name, $this->_adapter->getRecordValue($name));
             }

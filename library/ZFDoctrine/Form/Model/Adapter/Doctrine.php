@@ -120,7 +120,13 @@ class ZFDoctrine_Form_Model_Adapter_Doctrine implements ZFDoctrine_Form_Model_Ad
         return $relations;
     }
 
-    public function getRelatedRecord($record, $name) {
+    /**
+     *
+     * @param Doctrine_Record $record
+     * @param string $name
+     * @return string
+     */
+    public function getRelatedRecordId($record, $name) {
         return $record->$name;
     }
 

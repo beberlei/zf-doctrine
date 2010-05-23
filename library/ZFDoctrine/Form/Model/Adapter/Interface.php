@@ -42,7 +42,7 @@ interface ZFDoctrine_Form_Model_Adapter_Interface
      * @param string $name name of the relation
      * @return mixed
      */
-    public function getRelatedRecord($record, $name);
+    public function getRelatedRecordId($record, $name);
 
     /**
      * Return the value of a record's unique identifier

@@ -86,7 +86,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         if ($this->_registry->getRequest()->isPretend()) {
             $this->_print('Would enable Doctrine support by adding resource string.');
         } else {
-            $this->_print('Enabled Doctrine Zend_Application resource in project.');
+            $this->_print('Enabled Doctrine Zend_Application resource in project.', array('color' => 'green'));
         }
 
         $configsDirectory = $profile->search(array('configsDirectory'));
@@ -105,9 +105,9 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
                     $resource = $configsDirectory->createResource($resourceName);
                     if (!$resource->exists()) {
                         $resource->create();
-                        $this->_print('Created Resource: '.$resourceName);
+                        $this->_print('Created Resource: '.$resourceName, array('color' => 'green'));
                     } else {
-                        $this->_print('Registered Resource: '.$resourceName);
+                        $this->_print('Registered Resource: '.$resourceName, array('color' => 'green'));
                     }
                     $changes = true;
                 }
