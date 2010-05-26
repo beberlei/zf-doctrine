@@ -327,7 +327,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         }
     }
 
-    public function excecuteMigration($toVersion = null)
+    public function executeMigration($toVersion = null)
     {
         $this->_initDoctrineResource();
 
