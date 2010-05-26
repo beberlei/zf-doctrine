@@ -243,6 +243,10 @@ class ZFDoctrine_Application_Resource_Doctrine extends Zend_Application_Resource
                 : $value['dsn'];
 
             $conn = Doctrine_Manager::connection($dsn, $key);
+            
+            if (array_key_exists('charset', $value)) {
+                $conn->setCharset($value['charset']);
+            }
 
             if (array_key_exists('attributes', $value)) {
                 $this->_setAttributes($conn, $value['attributes']);
