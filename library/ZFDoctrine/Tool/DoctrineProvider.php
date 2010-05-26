@@ -183,11 +183,23 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         try {
             $models = ZFDoctrine_Core::getLoadedModels();
             $models = ZFDoctrine_Core::filterInvalidModels($models);
-
             $export = Doctrine_Manager::connection()->export;
-            $export->exportClasses($models);
 
-            $this->_print("Successfully created tables from model.", array('color' => 'green'));
+            $queries = $export->exportSortedClassesSql($models);
+            $countSql = 0;
+            foreach ($queries as $connectionName => $sql) {
+                $countSql += count($sql);
+            }
+
+            if ($countSql) {
+                $export->exportClasses($models);
+
+                $this->_print("Successfully created tables from model.", array('color' => 'green'));
+                $this->_print("Executing " . $countSql . " queries for " . count($queries) . " connections.", array('color' => 'green'));
+            } else {
+                $this->_print("No sql queries found to create tables from.", array('color' => array('white', 'bgRed')));
+                $this->_print("Have you generated a model from your YAML schema?", array('color' => array('white', 'bgRed')));
+            }
         } catch(Exception $e) {
             $this->_print("Error while creating tables from model: ".$e->getMessage(), array('color' => array('white', 'bgRed')));
 
