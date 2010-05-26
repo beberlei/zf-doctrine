@@ -353,7 +353,7 @@ module contains the user-management and our second module contains the forum cod
 >
 > Note the Default_Model_ and Forum_Model_ prefixes here which are necessary to comply with Zend Framework standards.
 
-First the `application/configs/schema/user.yaml`:
+First the `application/configs/schema/user.yml`:
 
     ---
     Default_Model_User:
@@ -437,7 +437,7 @@ First the `application/configs/schema/user.yaml`:
           class: Default_Model_Role
           local: permission_id
 
-And the second file put into `application/configs/schema/forum.yaml`:
+And the second file put into `application/configs/schema/forum.yml`:
 
     ---
     Forum_Model_Category:
