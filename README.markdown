@@ -88,6 +88,12 @@ The result should be help information on all the available commands:
         zf show-migration doctrine
         zf show doctrine
 
+Some shells like [Fish](http://fishshell.org/) might require a:
+
+    zf '?' doctrine
+
+in order to get that done.
+
 ## Setting up a new Zend Framework Project
 
 The Tool support for Doctrine 1 only works if your project contains a .zfproject.xml file that contains
