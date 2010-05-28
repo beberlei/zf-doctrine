@@ -124,6 +124,11 @@ class ZFDoctrine_Form_Model extends Zend_Form
         $this->_adapter->setTable($this->_model);
     }
 
+    public function getModelName()
+    {
+        return $this->_model;
+    }
+
     public function setOptions(array $options) {
         if(isset($options['model'])) {
             $this->_model = $options['model'];
