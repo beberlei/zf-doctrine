@@ -85,7 +85,7 @@ class ZFDoctrine_Controller_Helper_ModelForm extends Zend_Controller_Action_Help
                 if (!$record) {
                     throw new ZFDoctrine_DoctrineException("Cannot find record with given id.");
                 }
-                $actionController->view->assign('recordId', $recordId);
+                $actionController->view->assign('recordId', $id);
                 $actionController->view->assign('record', $record);
                 $form->setRecord($record);
             }
