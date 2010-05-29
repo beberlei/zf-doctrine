@@ -734,6 +734,55 @@ before rendering, validating or saving:
 After using setRecord, the default field values will be read from the record passed to the method. Also, when calling
 save(), any modifications will be saved to this record instead of a new one.
 
+### ModelForm Action Helper
+
+The model form action helper simplifies the CRUD workflow of your application
+considerably, it helps you abstract to write the create and update form
+controller actions if you obey to some conventions:
+
+* The Helper uses the `$form`, `$recordId` and `$record` view variables, don't reuse them in an action using the helper.
+* The Helper assumes GET and POST handling of a form are done in the same action method.
+* The helper automatically sets the form method to POST and the form action to the current MVC action.
+
+Register the ModelForm action helper by calling the following somewhere in your bootstrap:
+
+    Zend_Controller_Action_HelperBroker::addPath('ZFDoctrine/Controller/Helper', 'ZFDoctrine_Controller_Helper');
+
+See it in action for a Create form, the Controller Action:
+
+    public function addCategoryAction()
+    {
+        $form = $this->createCategoryForm();
+        $this->_helper->modelForm($form, "index");
+    }
+
+And the view script `add-category.phtml`:
+
+    <h1>Create a Category</h1>
+    <?= $this->form; ?>
+
+Using the model form helper for updating a Doctrine Record is slightly
+more complicated, the controller action looks like:
+
+    public function editCategoryAction()
+    {
+        $form = $this->createCategoryForm();
+        $this->getHelper('modelForm')
+             ->setRecordIdParam('id')
+             ->handleForm($form, 'index');
+    }
+
+And the view script `edit-category.pthml`:
+
+    <h1>Edit Category: <?= $this->record->name; ?><h1>
+    <?= $this->form; ?>
+
+The method `setRecordIdParam()` accepts the name of the GET variable that contains
+the id of a record. If the value of this field is `NULL` the form creates a new
+record instance, if the value of this field is not null but no record is found
+of this model with that particular id an exception of the type `ZFDoctrine_DoctrineException`
+is thrown.
+
 ### Handling Relations
 
 All to one relations and all to many relations are handled by select and multi-select html fields

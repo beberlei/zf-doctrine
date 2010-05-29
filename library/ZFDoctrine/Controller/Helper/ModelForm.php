@@ -75,20 +75,20 @@ class ZFDoctrine_Controller_Helper_ModelForm extends Zend_Controller_Action_Help
         }
 
         $id = null;
+        $actionParams = array();
         if ($this->getRecordIdParam()) {
             $id = $request->getParam($this->getRecordIdParam());
-            $table = Doctrine_Core::getTable($form->getModelName());
-            $record = $table->find($id);
-            if (!$record) {
-                throw new ZFDoctrine_DoctrineException("Cannot find record with given id.");
+            if ($id) {
+                $actionParams = array($this->getRecordIdParam() => $id);
+                $table = Doctrine_Core::getTable($form->getModelName());
+                $record = $table->find($id);
+                if (!$record) {
+                    throw new ZFDoctrine_DoctrineException("Cannot find record with given id.");
+                }
+                $actionController->view->assign('recordId', $recordId);
+                $actionController->view->assign('record', $record);
+                $form->setRecord($record);
             }
-            $actionController->view->assign('record', $record);
-            $form->setRecord($record);
-        }
-
-        $actionParams = array();
-        if ($id) {
-            $actionParams = array($this->getRecordIdParam() => $id);
         }
 
         $urlHelper = $actionController->getHelper('url');
