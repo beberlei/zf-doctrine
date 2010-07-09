@@ -1,7 +1,7 @@
-<div class="zfdoctrine-modellist zfdoctrine-model-<?= $this->modelName; ?>">
+<div class="zfdoctrine-modellist zfdoctrine-model-<?php echo $this->modelName; ?>">
     <?php if ($this->options['addRecordAction']): ?>
     <ul class="zfdoctrine-add">
-        <li><a href="<?= $this->url(array('action' => $this->options['addRecordAction'])); ?>">Add</a></li>
+        <li><a href="<?php echo $this->url(array('action' => $this->options['addRecordAction'])); ?>">Add</a></li>
     </ul>
     <?php endif; ?>
 
@@ -10,9 +10,9 @@
             <tr>
                 <?php foreach ($this->fieldNames AS $name): ?>
                     <?php if (isset($this->options['fieldLabels'][$name])): ?>
-                    <th><?= $this->escape($this->options['fieldLabels'][$name]); ?></th>
+                    <th><?php echo $this->escape($this->options['fieldLabels'][$name]); ?></th>
                     <?php else: ?>
-                    <th><?= $this->escape($name); ?></th>
+                    <th><?php echo $this->escape($name); ?></th>
                     <?php endif; ?>
                 <?php endforeach; ?>
                 <?php if ($this->options['editRecordAction'] || $this->options['deleteRecordAction']): ?>
@@ -24,16 +24,16 @@
             <?php foreach ($this->paginator AS $record): ?>
             <tr>
                 <?php foreach ($this->fieldNames AS $name): ?>
-                    <td class="zfdoctrine-field-<?= $name; ?>"><?= $this->escape($record->$name); ?></td>
+                    <td class="zfdoctrine-field-<?php echo $name; ?>"><?php echo $this->escape($record->$name); ?></td>
                 <?php endforeach; ?>
                 <?php if ($this->options['editRecordAction'] || $this->options['deleteRecordAction']): ?>
                 <td class="zfdoctrine-options">
                     <?php if ($this->options['editRecordAction']): ?>
-                    <a href="<?= $this->url(array('action' => $this->options['editRecordAction'], 'id' => $record->identifier())); ?>">Edit</a>
+                    <a href="<?php echo $this->url(array('action' => $this->options['editRecordAction'], 'id' => $record->identifier())); ?>">Edit</a>
                     <?php endif; ?>
 
                     <?php if ($this->options['deleteRecordAction']): ?>
-                    <a href="<?= $this->url(array('action' => $this->options['deleteRecordAction'], 'id' => $record->identifier())); ?>">Delete</a>
+                    <a href="<?php echo $this->url(array('action' => $this->options['deleteRecordAction'], 'id' => $record->identifier())); ?>">Delete</a>
                     <?php endif; ?>
                 </td>
                 <?php endif; ?>
