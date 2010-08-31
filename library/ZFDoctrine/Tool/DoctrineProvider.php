@@ -299,7 +299,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         $this->_print('Destination Directory: ' . $yamlDir);
     }
 
-    public function generateMigration($className=null, $fromDatabase=false, $fromModels=false)
+    public function generateMigration($className=null, $dFromDatabase=false, $mFromModels=false)
     {
         $migrationsPath = $this->_getMigrationsDirectoryPath();
 
@@ -308,7 +308,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
 
             $this->_print('Successfully generated migration class '.$className.'.', array('color' => 'green'));
             $this->_print('Destination Directory: '.$migratePath);
-        } else if ($fromDatabase) {
+        } else if ($dFromDatabase) {
             $this->_initDoctrineResource();
 
             $yamlSchemaPath = $this->_getYamlDirectoryPath();
@@ -330,7 +330,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
             } else {
                 throw new Exception('Could not generate migration classes from database');
             }
-        } else if ($fromModels) {
+        } else if ($mFromModels) {
             $this->_loadDoctrineModels();
 
             Doctrine_Core::generateMigrationsFromModels($migrationsPath, null);
