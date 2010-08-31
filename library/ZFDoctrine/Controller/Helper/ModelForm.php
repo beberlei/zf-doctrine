@@ -49,7 +49,7 @@ class ZFDoctrine_Controller_Helper_ModelForm extends Zend_Controller_Action_Help
      * @param string $module
      * @param array $params
      */
-    public function direct(ZFDoctrine_Form_Model $form, $action, $controller = null, $module = null, array $params = array())
+    public function direct(ZFDoctrine_Form_Model $form, $action = null, $controller = null, $module = null, array $params = array())
     {
         $this->handleForm($form, $action, $controller, $module, $params);
     }
