@@ -279,10 +279,11 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
 
     public function generateYamlFromModels()
     {
+        $doctrine = $this->_getDoctrineRegistry();
         $this->_loadDoctrineModels();
 
         $yamlDir = $this->_getYamlDirectoryPath();
-        Doctrine_Core::generateYamlFromModels($yamlDir);
+        Doctrine_Core::generateYamlFromModels($yamlDir, $doctrine->getModelPath());
 
         $this->_print('Successfully generated yaml schema files from model.', array('color' => 'green'));
         $this->_print('Destination Directory: ' . $yamlDir);
