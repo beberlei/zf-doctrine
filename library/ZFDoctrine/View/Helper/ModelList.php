@@ -61,7 +61,7 @@ class ZFDoctrine_View_Helper_ModelList extends Zend_View_Helper_Abstract
      * @param array $options
      * @return string
      */
-    public function modelList($modelName, array $options = array())
+    public function modelList($modelName, array $options = array(), Doctrine_Query_Abstract $query = null)
     {
         $options = array_merge(self::$_defaultOptions, $options);
 
@@ -70,7 +70,12 @@ class ZFDoctrine_View_Helper_ModelList extends Zend_View_Helper_Abstract
         }
 
         $table = Doctrine_Core::getTable($modelName);
-        $adapter = new ZFDoctrine_Paginator_Adapter_DoctrineQuery($table->createQuery());
+
+        if (!$query) {
+          $query = $table->createQuery();
+        }
+
+        $adapter = new ZFDoctrine_Paginator_Adapter_DoctrineQuery($query);
         $paginator = new Zend_Paginator($adapter);
 
         $front = Zend_Controller_Front::getInstance();
