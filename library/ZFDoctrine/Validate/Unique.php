@@ -143,22 +143,61 @@ class ZFDoctrine_Validate_Unique extends Zend_Validate_Abstract
                 }
             }
 
-            foreach (array_keys($context) as $key) {
+            $params = $context;
+            foreach (array_keys($params) as $key) {
                 if (!in_array($key, $fields)) {
-                    unset($context[$key]);
+                    unset($params[$key]);
                 }
             }
 
-            $record = call_user_func_array(array($table, $method), $context);
+            $record = call_user_func_array(array($table, $method), $params);
         }
 
-        if ($record) {
-            $this->_setValue($value);
-            $this->_error(self::ERROR_RECORD_FOUND);
+        // if no object or if we're updating the object, it's ok
+        if (!$record || $this->isUpdate($record, $context)) {
+          return true;
+        }
 
-            return false;
+        $this->_setValue($value);
+        $this->_error(self::ERROR_RECORD_FOUND);
+
+        return false;
+    }
+
+    /**
+     * Returns whether the object is being updated.
+     *
+     * @param Doctrine_Record Doctrine record
+     * @param array An array of values
+     *
+     * @return bool True if the object is being updated, false otherwise
+     */
+    protected function isUpdate(Doctrine_Record $record, $values)
+    {
+
+        // check each primary key column
+        foreach ($this->getPrimaryKeys() as $column) {
+            if (!isset($values[$column]) || $record->$column != $values[$column]) {
+                return false;
+            }
         }
 
         return true;
+    }
+
+    /**
+     * Returns the primary keys for the model.
+     *
+     * @return array An array of primary keys
+     */
+    protected function getPrimaryKeys()
+    {
+        $primaryKeys = Doctrine_Core::getTable($this->getModel())->getIdentifier();
+
+        if (!is_array($primaryKeys)) {
+            $primaryKeys = array($primaryKeys);
+        }
+
+        return $primaryKeys;
     }
 }
