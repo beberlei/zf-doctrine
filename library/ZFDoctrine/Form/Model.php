@@ -13,7 +13,7 @@
 
 /**
  * Class for autogenerating forms based on Doctrine models
- * 
+ *
  * @author Jani Hartikainen <firstname at codeutopia net>
  */
 class ZFDoctrine_Form_Model extends Zend_Form
@@ -382,7 +382,7 @@ class ZFDoctrine_Form_Model extends Zend_Form
         }
 
         foreach($this->getSubForms() as $subForm) {
-            if ($subForm instanceof ZFDoctrine_Form_ModelSubForm) {
+            if ($subForm instanceof ZFDoctrine_Form_Model_SubForm) {
                 $subForm->save($persist);
             }
         }
