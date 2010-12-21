@@ -308,7 +308,7 @@ class ZFDoctrine_Form_Model extends Zend_Form
                     $field->addMultiOption($text, ucwords($text));
                 }
             } else if($definition['foreignKey'] && $field instanceof Zend_Form_Element_Multi) {
-                $options = array('------');
+                $options = array(null => '------');
                 foreach ($this->_adapter->getAllRecords($definition['class']) AS $record) {
                     $options[$this->_adapter->getRecordIdentifier($record)] = (string)$record;
                 }
