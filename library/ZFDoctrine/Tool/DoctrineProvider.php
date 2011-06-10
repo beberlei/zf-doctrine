@@ -315,16 +315,16 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         } else if ($dFromDatabase) {
 
             $yamlSchemaPath = $this->_getYamlDirectoryPath();
-            $migration = new Doctrine_Migration($migrationsPath);
+            $migration = new Doctrine_Migration($migratePath);
             $result1 = false;
             if ( ! count($migration->getMigrationClasses())) {
-                $result1 = Doctrine_Core::generateMigrationsFromDb($migrationsPath);
+                $result1 = Doctrine_Core::generateMigrationsFromDb($migratePath);
             }
             $connections = array();
             foreach (Doctrine_Manager::getInstance() as $connection) {
                 $connections[] = $connection->getName();
             }
-            $changes = Doctrine_Core::generateMigrationsFromDiff($migrationsPath, $connections, $yamlSchemaPath);
+            $changes = Doctrine_Core::generateMigrationsFromDiff($migratePath, $connections, $yamlSchemaPath);
             $numChanges = count($changes, true) - count($changes);
             $result = ($result1 || $numChanges) ? true:false;
 
@@ -336,7 +336,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         } else if ($mFromModels) {
             $this->_loadDoctrineModels();
 
-            Doctrine_Core::generateMigrationsFromModels($migrationsPath, null);
+            Doctrine_Core::generateMigrationsFromModels($migratePath, null);
 
             $this->_print('Generated migration classes from the model successfully.');
         }
