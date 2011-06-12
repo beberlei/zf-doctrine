@@ -100,7 +100,7 @@ class ZFDoctrine_Tool_DoctrineProvider extends Zend_Tool_Project_Provider_Abstra
         foreach ($globalResources AS $resourceName) {
             if (!$profile->search(array('configsDirectory', $resourceName))) {
                 if ($this->_registry->getRequest()->isPretend()) {
-                    $this->_print("Would add ".$resourcenName." to the application config directory.");
+                    $this->_print("Would add ".$resourceName." to the application config directory.");
                 } else {
                     $resource = $configsDirectory->createResource($resourceName);
                     if (!$resource->exists()) {
