@@ -96,6 +96,22 @@ class ZFDoctrine_Application_Resource_Doctrine extends Zend_Application_Resource
     }
 
     /**
+     *
+     * @param Doctrine_Configurable $object
+     * @param array $attributes
+     * @return void
+     */
+    protected function _setHydrators(Doctrine_Configurable $object, array $attributes)
+    {
+        foreach ($attributes as $key => $value) {
+            if (!isset($key)) {
+                throw new Zend_Application_Resource_Exception('No name for hydrator defined. ' . $value);
+            }
+            $object->registerHydrator($key, $value);
+        }
+    }
+
+    /**
      * Set connection listeners
      *
      * @param   Doctrine_Connection_Common $conn
@@ -270,6 +286,11 @@ class ZFDoctrine_Application_Resource_Doctrine extends Zend_Application_Resource
         $manager = Doctrine_Manager::getInstance();
         $manager->setAttribute(Doctrine_Core::ATTR_MODEL_LOADING, ZFDoctrine_Core::MODEL_LOADING_ZEND); // default
         
+
+        if (array_key_exists('hydrators', $this->_managerOptions)) {
+            $this->_setHydrators($manager, $this->_managerOptions['hydrators']);
+        }
+
         if (array_key_exists('attributes', $this->_managerOptions)) {
             $this->_setAttributes($manager, $this->_managerOptions['attributes']);
         }
