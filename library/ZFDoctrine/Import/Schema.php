@@ -91,7 +91,6 @@ class ZFDoctrine_Import_Schema extends Doctrine_Import_Schema
     public function getOptions()
     {
         $options = parent::getOptions();
-        $options['pearStyle'] = false;
         $options['baseClassesDirectory'] = 'Base';
         $options['baseClassPrefix'] = '';
         $options['classPrefix'] = '';
