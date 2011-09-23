@@ -34,6 +34,10 @@ class ZFDoctrine_Import_Builder extends Doctrine_Import_Builder
         $pos = strpos($originalClassName, 'Model_');
         $originalClassName = substr($originalClassName, $pos+6);
 
+        if ($this->_pearStyle) {
+            $originalClassName = str_replace('_', '/', $originalClassName);
+        }
+
         $file = $originalClassName . $this->_suffix;
 
         return $file;
@@ -49,7 +53,11 @@ class ZFDoctrine_Import_Builder extends Doctrine_Import_Builder
         $className = $definition['tableClassName'];
         $pos = strpos($className, "Model_");
         $fileName = substr($className, $pos+6) . $this->_suffix;
-        $writePath = $path . DIRECTORY_SEPARATOR . $fileName;
+        if ($this->_pearStyle) {
+            $writePath = $path . DIRECTORY_SEPARATOR . str_replace('_', '/', $fileName);
+        } else {
+            $writePath = $path . DIRECTORY_SEPARATOR . $fileName;
+        }
 
         $content = $this->buildTableClassDefinition($className, $definition, $options);
 
