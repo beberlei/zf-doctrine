@@ -34,14 +34,18 @@ class ZFDoctrine_View_Helper_ModelList extends Zend_View_Helper_Abstract
      * @var array
      */
     static private $_defaultOptions = array(
-        'pageParamName' => 'page',
-        'paginationStyle' => 'Sliding',
-        'paginationScript' => null,
-        'addRecordAction' => null,
-        'editRecordAction' => null,
+        'pageParamName'      => 'page',
+        'paginationStyle'    => 'Sliding',
+        'paginationScript'   => null,
+        'addRecordAction'    => null,
+        'editRecordAction'   => null,
         'deleteRecordAction' => null,
-        'itemsPerPage' => 30,
-        'listScript' => null,
+        'addRecordUrl'       => null,
+        'editRecordUrl'      => null,
+        'deleteRecordUrl'    => null,
+        'itemsPerPage'       => 30,
+        'listScript'         => null,
+        'recordIdParam'      => 'id',
     );
 
     static private $_enabledView = array();
@@ -94,12 +98,36 @@ class ZFDoctrine_View_Helper_ModelList extends Zend_View_Helper_Abstract
             $fieldNames = $options['showFieldNames'];
         }
 
+        if (isset($options['addRecordAction'])) {
+            if (!isset($options['addRecordUrl'])) {
+                $options['addRecordUrl'] = array();
+            }
+
+            $options['addRecordUrl']['action'] = $options['addRecordAction'];
+        }
+
+        if (isset($options['editRecordAction'])) {
+            if (!isset($options['editRecordUrl'])) {
+                $options['editRecordUrl'] = array();
+            }
+
+            $options['editRecordUrl']['action'] = $options['editRecordAction'];
+        }
+
+        if (isset($options['deleteRecordAction'])) {
+            if (!isset($options['deleteRecordUrl'])) {
+                $options['deleteRecordUrl'] = array();
+            }
+
+            $options['deleteRecordUrl']['action'] = $options['deleteRecordAction'];
+        }
+
         return $this->view->partial($options['listScript'], array(
-            'modelName' => $modelName,
-            'paginator' => $paginator,
+            'modelName'   => $modelName,
+            'paginator'   => $paginator,
             'currentPage' => $currentPage,
-            'options' => $options,
-            'fieldNames' => $fieldNames,
+            'options'     => $options,
+            'fieldNames'  => $fieldNames,
         ));
     }
 

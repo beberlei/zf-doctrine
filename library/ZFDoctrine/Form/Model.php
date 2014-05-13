@@ -13,7 +13,7 @@
 
 /**
  * Class for autogenerating forms based on Doctrine models
- * 
+ *
  * @author Jani Hartikainen <firstname at codeutopia net>
  */
 class ZFDoctrine_Form_Model extends Zend_Form
@@ -106,7 +106,9 @@ class ZFDoctrine_Form_Model extends Zend_Form
         if($this->_adapter == null) {
             $this->setAdapter(new ZFDoctrine_Form_Model_Adapter_Doctrine());
         }
-        
+
+        $this->addElementPrefixPath('ZFDoctrine', 'ZFDoctrine');
+
         $this->_preGenerate();
         $this->_generateForm();
         $this->_postGenerate();
@@ -306,7 +308,7 @@ class ZFDoctrine_Form_Model extends Zend_Form
                     $field->addMultiOption($text, ucwords($text));
                 }
             } else if($definition['foreignKey'] && $field instanceof Zend_Form_Element_Multi) {
-                $options = array('------');
+                $options = array(null => '------');
                 foreach ($this->_adapter->getAllRecords($definition['class']) AS $record) {
                     $options[$this->_adapter->getRecordIdentifier($record)] = (string)$record;
                 }
@@ -380,7 +382,7 @@ class ZFDoctrine_Form_Model extends Zend_Form
         }
 
         foreach($this->getSubForms() as $subForm) {
-            if ($subForm instanceof ZFDoctrine_Form_ModelSubForm) {
+            if ($subForm instanceof ZFDoctrine_Form_Model_SubForm) {
                 $subForm->save($persist);
             }
         }

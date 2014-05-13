@@ -56,7 +56,7 @@ class ZFDoctrine_Controller_Helper_ModelForm extends Zend_Controller_Action_Help
 
     /**
      * Handle Create or Update Workflow of a ZFDoctrine_Form_Model instance
-     * 
+     *
      * @throws ZFDoctrine_DoctrineException
      * @param ZFDoctrine_Form_Model $form
      * @param string $action
@@ -100,7 +100,7 @@ class ZFDoctrine_Controller_Helper_ModelForm extends Zend_Controller_Action_Help
             $actionParams
         ));
 
-        if ($request->isPost() && $form->isValid($request->getPost())) {
+        if ($request->isPost() && $form->isValid($request->getParams())) {
             $form->save();
 
             $redirector = $actionController->getHelper('redirector');
